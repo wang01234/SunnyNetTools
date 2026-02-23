@@ -1,5 +1,6 @@
 <script>
 import Home from './components/Home.vue'
+import Login from './components/Login.vue'
 import {CallGoDo} from "./components/CallbackEventsOn.js";
 import {ElNotification} from "element-plus";
 
@@ -25,12 +26,20 @@ window.VsCodeEdit = {JavaScriptEdit: false}
 let Interval = 0;
 export default {
   components: {
-    Home
+    Home,
+    Login
   },
   data() {
-    return {}
+    return {
+      isLoggedIn: false
+    }
   },
   mounted() {
+    // 监听登录成功事件
+    window.addEventListener('login-success', () => {
+      this.isLoggedIn = true
+    })
+    
     Interval = setInterval(function () {
       let b = true
       for (const fieldName in window.VsCodeEdit) {
@@ -115,7 +124,8 @@ document.addEventListener('mousemove', event => {
 </script>
 
 <template>
-  <Home v-no-scroll/>
+  <Login v-if="!isLoggedIn" />
+  <Home v-else v-no-scroll/>
 </template>
 
 

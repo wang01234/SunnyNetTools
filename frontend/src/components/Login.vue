@@ -1,0 +1,199 @@
+<script>
+import { reactive, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { CallGoDo } from './CallbackEventsOn.js'
+
+export default {
+  name: 'Login',
+  data() {
+    return {
+      loginForm: reactive({
+        username: '',
+        password: ''
+      }),
+      loginRules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 1, message: '密码不能为空', trigger: 'blur' }
+        ]
+      },
+      loading: false
+    }
+  },
+  methods: {
+    async handleLogin() {
+      this.$refs.loginForm.validate(async (valid) => {
+        if (!valid) {
+          return false
+        }
+        
+        this.loading = true
+        try {
+          // 调用后端登录验证 API
+          const result = await CallGoDo('用户登录', {
+            username: this.loginForm.username,
+            password: this.loginForm.password
+          })
+          
+          if (result.success) {
+            ElMessage({
+              message: '登录成功',
+              type: 'success'
+            })
+            // 触发登录成功事件
+            window.dispatchEvent(new CustomEvent('login-success'))
+          } else {
+            ElMessage({
+              message: result.message || '用户名或密码错误',
+              type: 'error'
+            })
+          }
+        } catch (error) {
+          ElMessage({
+            message: '登录失败，请稍后重试',
+            type: 'error'
+          })
+        } finally {
+          this.loading = false
+        }
+      })
+    },
+    resetForm() {
+      this.$refs.loginForm.resetFields()
+    }
+  }
+}
+</script>
+
+<template>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="login-header">
+        <h2>大神工具 登录</h2>
+      </div>
+      <el-form
+        ref="loginForm"
+        :model="loginForm"
+        :rules="loginRules"
+        class="login-form"
+        autocomplete="on"
+        label-position="left"
+      >
+        <el-form-item prop="username">
+          <el-input
+            v-model="loginForm.username"
+            placeholder="用户名"
+            name="username"
+            type="text"
+            tabindex="1"
+            autocomplete="on"
+            prefix-icon="User"
+            size="large"
+          />
+        </el-form-item>
+        
+        <el-form-item prop="password">
+          <el-input
+            v-model="loginForm.password"
+            placeholder="密码"
+            name="password"
+            type="password"
+            tabindex="2"
+            autocomplete="on"
+            prefix-icon="Lock"
+            size="large"
+            show-password
+            @keyup.enter="handleLogin"
+          />
+        </el-form-item>
+        
+        <el-button
+          :loading="loading"
+          type="primary"
+          size="large"
+          style="width: 100%; margin-bottom: 30px"
+          @click.prevent="handleLogin"
+        >
+          {{ loading ? '登录中...' : '登 录' }}
+        </el-button>
+        
+        <div class="tips">
+          <span>默认账号: admin</span>
+          <span>默认密码: admin</span>
+        </div>
+      </el-form>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.login-container {
+  min-height: 100%;
+  width: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.login-box {
+  width: 400px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header h2 {
+  margin: 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.login-form {
+  margin-top: 20px;
+}
+
+.tips {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #999;
+}
+
+:deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px #dcdfe6 inset;
+}
+
+:deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #409eff inset;
+}
+
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #409eff inset;
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 24px;
+}
+
+:deep(.el-button--primary) {
+  background-color: #409eff;
+  border-color: #409eff;
+}
+
+:deep(.el-button--primary:hover) {
+  background-color: #66b1ff;
+  border-color: #66b1ff;
+}
+</style>
