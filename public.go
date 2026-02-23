@@ -1480,8 +1480,8 @@ func event(command string, args *JSON.SyJson) any {
 		username := args.GetData("username")
 		password := args.GetData("password")
 		// 使用 LoginUserInfo 进行登录验证
-		_TmpLock.RLock()
-		defer _TmpLock.RUnlock()
+		_TmpLock.Lock()
+		defer _TmpLock.Unlock()
 		if savedPassword, ok := GlobalConfig.LoginUserInfo[username]; ok {
 			if savedPassword == password {
 				return map[string]bool{"success": true}
@@ -1489,8 +1489,8 @@ func event(command string, args *JSON.SyJson) any {
 		}
 		return map[string]bool{"success": false}
 	case "获取账号列表":
-		_TmpLock.RLock()
-		defer _TmpLock.RUnlock()
+		_TmpLock.Lock()
+		defer _TmpLock.Unlock()
 		var usernames []string
 		for username := range GlobalConfig.LoginUserInfo {
 			usernames = append(usernames, username)
@@ -1500,12 +1500,12 @@ func event(command string, args *JSON.SyJson) any {
 		username := args.GetData("username")
 		password := args.GetData("password")
 		if username == "" || password == "" {
-			return map[string]bool{"success": false, "message": "用户名或密码不能为空"}
+			return map[string]string{"success": "false", "message": "用户名或密码不能为空"}
 		}
 		_TmpLock.Lock()
 		defer _TmpLock.Unlock()
 		if _, ok := GlobalConfig.LoginUserInfo[username]; ok {
-			return map[string]bool{"success": false, "message": "账号已存在"}
+			return map[string]string{"success": "false", "message": "账号已存在"}
 		}
 		GlobalConfig.LoginUserInfo[username] = password
 		_ = GlobalConfig.saveToFile()
@@ -1514,12 +1514,12 @@ func event(command string, args *JSON.SyJson) any {
 		username := args.GetData("username")
 		password := args.GetData("password")
 		if username == "" || password == "" {
-			return map[string]bool{"success": false, "message": "用户名或密码不能为空"}
+			return map[string]string{"success": "false", "message": "用户名或密码不能为空"}
 		}
 		_TmpLock.Lock()
 		defer _TmpLock.Unlock()
 		if _, ok := GlobalConfig.LoginUserInfo[username]; !ok {
-			return map[string]bool{"success": false, "message": "账号不存在"}
+			return map[string]string{"success": "false", "message": "账号不存在"}
 		}
 		GlobalConfig.LoginUserInfo[username] = password
 		_ = GlobalConfig.saveToFile()
@@ -1527,16 +1527,16 @@ func event(command string, args *JSON.SyJson) any {
 	case "删除账号":
 		username := args.GetData("username")
 		if username == "" {
-			return map[string]bool{"success": false, "message": "用户名不能为空"}
+			return map[string]string{"success": "false", "message": "用户名不能为空"}
 		}
 		// 不允许删除默认账号
 		if username == "admin" {
-			return map[string]bool{"success": false, "message": "默认账号不能删除"}
+			return map[string]string{"success": "false", "message": "默认账号不能删除"}
 		}
 		_TmpLock.Lock()
 		defer _TmpLock.Unlock()
 		if _, ok := GlobalConfig.LoginUserInfo[username]; !ok {
-			return map[string]bool{"success": false, "message": "账号不存在"}
+			return map[string]string{"success": "false", "message": "账号不存在"}
 		}
 		delete(GlobalConfig.LoginUserInfo, username)
 		_ = GlobalConfig.saveToFile()

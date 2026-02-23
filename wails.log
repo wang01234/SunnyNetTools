@@ -1,0 +1,14 @@
+[0;92mWails CLI[0m [0;31mv2.11.0[0m
+
+[0;92mUpdated go.mod to use Go '1.20'[0m
+[0;92mUpdating go.mod to use Wails 'v2.11.0'[0m
+[0;92mExecuting: go mod tidy[0m
+  [90m[90m•[0m[0m [39m[39mGenerating bindings: [0m[0m
+[30;101m[30;101m  ERROR  [0m[0m [91m[91m[0m[0m
+[30;101m[30;101m         [0m[0m [91m[91m# changeme[0m[0m
+[30;101m[30;101m         [0m[0m [91m[91m./public.go:1483:12: _TmpLock.RLock undefined (type "sync".Mutex has no field or method RLock)[0m[0m
+[30;101m[30;101m         [0m[0m [91m[91m./public.go:1484:18: _TmpLock.RUnlock undefined (type "sync".Mutex has no field or method RUnlock)[0m[0m
+[30;101m[30;101m         [0m[0m [91m[91m[0m[0m
+[30;101m[30;101m         [0m[0m [91m[91mexit status 1[0m[0m
+[31;107m[31;107m ♥  [0m[0m [92m[92mIf Wails is useful to you or your company, please consider sponsoring the project:[0m[0m
+https://github.com/sponsors/leaanthony
