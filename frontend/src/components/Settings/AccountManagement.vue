@@ -5,13 +5,15 @@
     </div>
     
     <el-table :data="accounts" style="width: 100%; margin-top: 20px" border>
-      <el-table-column prop="username" label="用户名" width="200">
+      <el-table-column prop="username" label="用户名" min-width="200">
         <template #default="scope">
-          <span>{{ scope.row.username }}</span>
-          <el-tag v-if="scope.row.isDefault" size="small" type="info" style="margin-left: 8px">默认</el-tag>
+          <div style="display: flex; align-items: center;">
+            <span>{{ scope.row.username }}</span>
+            <el-tag v-if="scope.row.isDefault" size="small" type="info" style="margin-left: 8px">默认</el-tag>
+          </div>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200">
+      <el-table-column label="操作" width="200" align="center">
         <template #default="scope">
           <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">修改密码</el-button>
           <el-button 
