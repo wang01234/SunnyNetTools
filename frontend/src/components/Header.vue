@@ -157,17 +157,6 @@
       </div>
     </div>
     <PartitionOperator @dblclick.stop/>
-    <!-- 开源协议 -->
-    <div style="display: flex; align-items: center;" @dblclick.stop>
-      <div @click="clickOpenSourceProtocol" style="cursor: pointer; display: flex; align-items: center;">
-        <el-icon>
-          <Reading/>
-        </el-icon>
-        <div style="width: 2px"></div>
-        开源协议
-      </div>
-    </div>
-
 
     <div style="position: absolute; right: 95px; cursor: pointer;z-index: 1000000;width: 16px;height: 16px"
          @dblclick.stop>
