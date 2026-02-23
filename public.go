@@ -1479,10 +1479,13 @@ func event(command string, args *JSON.SyJson) any {
 	case "用户登录":
 		username := args.GetData("username")
 		password := args.GetData("password")
-		// 简单验证 - 实际项目中应从配置文件或数据库读取
-		// 默认账号: admin, 密码: admin
-		if username == "admin" && password == "admin" {
-			return map[string]bool{"success": true}
+		// 使用配置中的身份验证账号进行验证
+		_TmpLock.RLock()
+		defer _TmpLock.RUnlock()
+		if savedPassword, ok := GlobalConfig.AuthenticationUserInfo[username]; ok {
+			if savedPassword == password {
+				return map[string]bool{"success": true}
+			}
 		}
 		return map[string]bool{"success": false}
 	case "":
