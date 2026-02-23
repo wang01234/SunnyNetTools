@@ -152,6 +152,16 @@
                           </template>
                           <ListColorConfig ref="colorConfig" style="width: 100%;height: 456px"/>
                         </el-collapse-item>
+                        <el-collapse-item name="账号管理">
+                          <template #title>
+                            <el-icon>
+                              <User/>
+                            </el-icon>
+                            &nbsp;
+                            <span>账号管理</span>
+                          </template>
+                          <AccountManagement/>
+                        </el-collapse-item>
                       </el-collapse>
                     </el-main>
                   </el-container>
@@ -197,6 +207,7 @@ import MustList from "./Settings/MustTCP/MustList.vue";
 import Replace from "./Settings/ReplaceRules/Replace.vue";
 import RequestCertificate from "./Settings/RequestCertificate/RequestCertificate.vue";
 import Proc from "./Settings/process/proc.vue";
+import AccountManagement from "./Settings/AccountManagement.vue";
 import {ElMessage} from "element-plus";
 import ResponseTabs from "./Response/Response_Tabs.vue";
 
@@ -309,7 +320,7 @@ export default {
     RequestCertificate,
     Replace,
     MustList,
-    List, Agent, MustTCP, SSL, BasicSettings, ListColorConfig, SettingsJavaScriptEdit
+    List, Agent, MustTCP, SSL, BasicSettings, ListColorConfig, SettingsJavaScriptEdit, AccountManagement
   },
   computed: {
     IsWindows() {
