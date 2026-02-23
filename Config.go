@@ -723,6 +723,7 @@ type UserConfig struct {
 	DisableCache           bool                 `json:"DisableCache"`
 	Authentication         bool                 `json:"OpenAuthentication"`
 	AuthenticationUserInfo map[string]string    `json:"AuthenticationUserInfo"`
+	LoginUserInfo          map[string]string    `json:"LoginUserInfo"`
 	GlobalProxy            string               `json:"GlobalProxy"`
 	GlobalProxyRules       string               `json:"GlobalProxyRules"`
 	ReplaceRules           []ConfigReplaceRules `json:"ReplaceRules"`
@@ -773,6 +774,9 @@ func (c *UserConfig) loadDefaultValue() {
 	}
 	if c.AuthenticationUserInfo == nil {
 		c.AuthenticationUserInfo = make(map[string]string)
+	}
+	if c.LoginUserInfo == nil {
+		c.LoginUserInfo = make(map[string]string)
 	}
 	//证书选择使用
 	{
