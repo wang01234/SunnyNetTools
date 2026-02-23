@@ -778,6 +778,10 @@ func (c *UserConfig) loadDefaultValue() {
 	if c.LoginUserInfo == nil {
 		c.LoginUserInfo = make(map[string]string)
 	}
+	// 添加默认登录账号
+	if len(c.LoginUserInfo) == 0 {
+		c.LoginUserInfo["admin"] = "admin"
+	}
 	//证书选择使用
 	{
 		if c.Cert.Default == false {
