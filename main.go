@@ -17,7 +17,7 @@ func main() {
 	// Create application with options
 	err := wails.Run(&options.App{
 		Frameless: true,
-		Title:     "SunnyNet",
+		Title:     "DS 大神工具",
 		Width:     Size.Width,
 		Height:    Size.Height,
 		MinWidth:  823,
