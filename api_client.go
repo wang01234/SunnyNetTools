@@ -1,0 +1,182 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+)
+
+// APIConfig holds the API server configuration
+type APIConfig struct {
+	URL string
+}
+
+// GetAPIConfig returns the API configuration from GlobalConfig
+func GetAPIConfig() APIConfig {
+	return APIConfig{
+		URL: GlobalConfig.APIURL,
+	}
+}
+
+// LoginRequest represents a login API request
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// LoginResponse represents a login API response
+type LoginResponse struct {
+	Success  bool   `json:"success"`
+	Message  string `json:"message,omitempty"`
+	Username string `json:"username,omitempty"`
+}
+
+// UsersResponse represents a users list API response
+type UsersResponse struct {
+	Success bool     `json:"success"`
+	Users   []string `json:"users,omitempty"`
+	Message string   `json:"message,omitempty"`
+}
+
+// ActionResponse represents a generic action API response
+type ActionResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message,omitempty"`
+}
+
+// APICall performs an HTTP request to the API server
+func APICall(method, endpoint string, body interface{}) ([]byte, error) {
+	config := GetAPIConfig()
+
+	var reqBody []byte
+	if body != nil {
+		reqBody, _ = json.Marshal(body)
+	}
+
+	url := config.URL + endpoint
+	req, err := http.NewRequest(method, url, bytes.NewBuffer(reqBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	result := make([]byte, 1024)
+	n, _ := resp.Body.Read(result)
+	return result[:n], nil
+}
+
+// Login calls the login API
+func Login(username, password string) (bool, string, error) {
+	config := GetAPIConfig()
+
+	req := LoginRequest{
+		Username: username,
+		Password: password,
+	}
+
+	jsonData, _ := json.Marshal(req)
+	resp, err := http.Post(config.URL+"/api/login", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result LoginResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	if result.Success {
+		return true, result.Username, nil
+	}
+	return false, result.Message, nil
+}
+
+// GetUsers calls the get users API
+func GetUsers(currentUser string) ([]string, error) {
+	config := GetAPIConfig()
+
+	resp, err := http.Get(config.URL + "/api/users")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var result UsersResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	return result.Users, nil
+}
+
+// CreateUser calls the create user API
+func CreateUser(username, password string) (bool, string, error) {
+	config := GetAPIConfig()
+
+	req := LoginRequest{
+		Username: username,
+		Password: password,
+	}
+
+	jsonData, _ := json.Marshal(req)
+	resp, err := http.Post(config.URL+"/api/users", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result ActionResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	return result.Success, result.Message, nil
+}
+
+// UpdatePassword calls the update password API
+func UpdatePassword(username, password string) (bool, string, error) {
+	config := GetAPIConfig()
+
+	req := map[string]string{"password": password}
+	jsonData, _ := json.Marshal(req)
+
+	url := fmt.Sprintf("%s/api/users/%s", config.URL, username)
+	httpClient := &http.Client{}
+	reqHTTP, _ := http.NewRequest("PUT", url, bytes.NewBuffer(jsonData))
+	reqHTTP.Header.Set("Content-Type", "application/json")
+
+	resp, err := httpClient.Do(reqHTTP)
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result ActionResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	return result.Success, result.Message, nil
+}
+
+// DeleteUser calls the delete user API
+func DeleteUser(username string) (bool, string, error) {
+	config := GetAPIConfig()
+
+	url := fmt.Sprintf("%s/api/users/%s", config.URL, username)
+	httpClient := &http.Client{}
+	reqHTTP, _ := http.NewRequest("DELETE", url, nil)
+
+	resp, err := httpClient.Do(reqHTTP)
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result ActionResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	return result.Success, result.Message, nil
+}

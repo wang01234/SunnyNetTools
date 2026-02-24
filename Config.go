@@ -747,6 +747,8 @@ type UserConfig struct {
 	} `json:"Cert"`
 	RequestCertManager map[int]ConfigRequestCertManager `json:"RequestCertManager"`
 	GOOS               string                           `json:"GOOS"`
+	// API服务器地址
+	APIURL string `json:"APIURL"`
 }
 
 func (c *UserConfig) loadDefaultValue() {
@@ -774,6 +776,10 @@ func (c *UserConfig) loadDefaultValue() {
 	}
 	if c.AuthenticationUserInfo == nil {
 		c.AuthenticationUserInfo = make(map[string]string)
+	}
+	// API服务器默认配置
+	if c.APIURL == "" {
+		c.APIURL = "http://47.108.25.208:8080"
 	}
 	if c.LoginUserInfo == nil {
 		c.LoginUserInfo = make(map[string]string)
