@@ -43,6 +43,8 @@ export default {
               message: '登录成功',
               type: 'success'
             })
+            // 存储当前用户名
+            window.localStorage.setItem('currentUser', result.username || this.loginForm.username)
             // 触发登录成功事件
             window.dispatchEvent(new CustomEvent('login-success'))
           } else {
@@ -120,10 +122,6 @@ export default {
           {{ loading ? '登录中...' : '登 录' }}
         </el-button>
         
-        <div class="tips">
-          <span>默认账号: admin</span>
-          <span>默认密码: admin</span>
-        </div>
       </el-form>
     </div>
   </div>

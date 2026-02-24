@@ -54,3 +54,5 @@ require (
 )
 
 // replace github.com/wailsapp/wails/v2 v2.6.0 => C:\Users\qinka\go\pkg\mod
+
+replace github.com/qtgolang/SunnyNet v1.0.3 => ./third_party/SunnyNet

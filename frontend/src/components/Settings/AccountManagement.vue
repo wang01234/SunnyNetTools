@@ -109,7 +109,8 @@ export default {
 
     const loadAccounts = async () => {
       try {
-        const result = await CallGoDo('获取账号列表', null)
+        const currentUser = window.localStorage.getItem('currentUser') || ''
+        const result = await CallGoDo('获取账号列表', { currentUser })
         if (result) {
           accounts.value = result.map(username => ({
             username,
