@@ -1,7 +1,9 @@
 #include "c_iphlpapi_tcp.h"
 
+typedef DWORD (WINAPI * GetTcpTable2Fn)(PMIB_TCPTABLE2 TcpTable, PULONG SizePointer, BOOL Order);
+
 // 定义指向 GetTcpTable2 函数的指针变量
-GetTcpTable2 pGetTcpTable2;
+GetTcpTable2Fn pGetTcpTable2;
 
 // 定义指向 GetExtendedTcpTable 函数的指针变量
 GETEXTENDEDTABLE pGetExtendedTcpTable;
@@ -25,7 +27,7 @@ void closeTcpConnectionInit() {
 	pSetTcpEntry = (SETTCPENTRY)GetProcAddress(hModule, "SetTcpEntry");
 
 	// 获取 GetTcpTable2 函数地址
-	pGetTcpTable2 = (GetTcpTable2) GetProcAddress(hModule, "GetTcpTable2");
+	pGetTcpTable2 = (GetTcpTable2Fn) GetProcAddress(hModule, "GetTcpTable2");
 
 	if (pGetExtendedTcpTable == NULL || pSetTcpEntry == NULL || pGetTcpTable2 == NULL) {
 		// 获取失败，释放动态库并退出函数
