@@ -88,8 +88,44 @@ jobs:
           path: build/bin/*.zip
           retention-days: 5
 
+  build-api-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: false
+
+      - name: Build Linux API Server
+        run: |
+          cd api-server
+          GOOS=linux GOARCH=amd64 go build -o auth-api-linux
+
+      - name: Build Windows API Server
+        run: |
+          cd api-server
+          GOOS=windows GOARCH=amd64 go build -o auth-api-windows.exe
+
+      - name: Upload Linux API Server
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-server-linux
+          path: api-server/auth-api-linux
+          retention-days: 5
+
+      - name: Upload Windows API Server
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-server-windows
+          path: api-server/auth-api-windows.exe
+          retention-days: 5
+
   release:
-    needs: [build-windows, build-macos]
+    needs: [build-windows, build-macos, build-api-server]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
@@ -106,6 +142,29 @@ jobs:
         with:
           name: macos-zip
           path: release
+
+      - name: Download Linux API Server
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-linux
+          path: release
+
+      - name: Download Windows API Server
+        uses: actions/download-artifact@v4
+        with:
+          name: api-server-windows
+          path: release
+
+      - name: Download API Server Config
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            api-server/config.json
+          sparse-checkout-cone-mode: false
+
+      - name: Copy API Server Config
+        run: |
+          cp api-server/config.json release/
 
       - name: List Release Files
         run: ls -la release/
