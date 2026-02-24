@@ -1,0 +1,8 @@
+{
+  "db_host": "47.108.25.208",
+  "db_port": "3306",
+  "db_user": "sunny_db",
+  "db_password": "LnczeYcjKssZesdm",
+  "db_database": "sunny_db",
+  "api_port": "8080"
+}

@@ -1479,56 +1479,52 @@ func event(command string, args *JSON.SyJson) any {
 	case "用户登录":
 		username := args.GetData("username")
 		password := args.GetData("password")
-		// 使用 LoginUserInfo 进行登录验证
-		_TmpLock.Lock()
-		defer _TmpLock.Unlock()
-		if savedPassword, ok := GlobalConfig.LoginUserInfo[username]; ok {
-			if savedPassword == password {
-				return map[string]interface{}{"success": true, "username": username}
-			}
+		// 使用API服务器进行登录验证
+		success, msg, err := Login(username, password)
+		if err != nil {
+			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
 		}
-		return map[string]bool{"success": false}
+		if success {
+			return map[string]interface{}{"success": true, "username": username}
+		}
+		return map[string]string{"success": "false", "message": msg}
 	case "获取账号列表":
-		_TmpLock.Lock()
-		defer _TmpLock.Unlock()
-		currentUser := args.GetData("currentUser")
-		var usernames []string
-		for username := range GlobalConfig.LoginUserInfo {
-			// 如果当前用户不是admin，则过滤掉admin账号
-			if currentUser != "admin" && username == "admin" {
-				continue
-			}
-			usernames = append(usernames, username)
+		// 使用API服务器获取账号列表
+		users, err := GetUsers(args.GetData("currentUser"))
+		if err != nil {
+			return []string{}
 		}
-		return usernames
+		return users
 	case "添加账号":
 		username := args.GetData("username")
 		password := args.GetData("password")
 		if username == "" || password == "" {
 			return map[string]string{"success": "false", "message": "用户名或密码不能为空"}
 		}
-		_TmpLock.Lock()
-		defer _TmpLock.Unlock()
-		if _, ok := GlobalConfig.LoginUserInfo[username]; ok {
-			return map[string]string{"success": "false", "message": "账号已存在"}
+		// 使用API服务器添加账号
+		success, msg, err := CreateUser(username, password)
+		if err != nil {
+			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
 		}
-		GlobalConfig.LoginUserInfo[username] = password
-		_ = GlobalConfig.saveToFile()
-		return map[string]bool{"success": true}
+		if success {
+			return map[string]bool{"success": true}
+		}
+		return map[string]string{"success": "false", "message": msg}
 	case "修改密码":
 		username := args.GetData("username")
 		password := args.GetData("password")
 		if username == "" || password == "" {
 			return map[string]string{"success": "false", "message": "用户名或密码不能为空"}
 		}
-		_TmpLock.Lock()
-		defer _TmpLock.Unlock()
-		if _, ok := GlobalConfig.LoginUserInfo[username]; !ok {
-			return map[string]string{"success": "false", "message": "账号不存在"}
+		// 使用API服务器修改密码
+		success, msg, err := UpdatePassword(username, password)
+		if err != nil {
+			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
 		}
-		GlobalConfig.LoginUserInfo[username] = password
-		_ = GlobalConfig.saveToFile()
-		return map[string]bool{"success": true}
+		if success {
+			return map[string]bool{"success": true}
+		}
+		return map[string]string{"success": "false", "message": msg}
 	case "删除账号":
 		username := args.GetData("username")
 		if username == "" {
@@ -1538,14 +1534,15 @@ func event(command string, args *JSON.SyJson) any {
 		if username == "admin" {
 			return map[string]string{"success": "false", "message": "默认账号不能删除"}
 		}
-		_TmpLock.Lock()
-		defer _TmpLock.Unlock()
-		if _, ok := GlobalConfig.LoginUserInfo[username]; !ok {
-			return map[string]string{"success": "false", "message": "账号不存在"}
+		// 使用API服务器删除账号
+		success, msg, err := DeleteUser(username)
+		if err != nil {
+			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
 		}
-		delete(GlobalConfig.LoginUserInfo, username)
-		_ = GlobalConfig.saveToFile()
-		return map[string]bool{"success": true}
+		if success {
+			return map[string]bool{"success": true}
+		}
+		return map[string]string{"success": "false", "message": msg}
 	case "":
 		return ""
 	default:
