@@ -17,6 +17,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
+          cache: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -32,7 +33,7 @@ jobs:
           npm install
 
       - name: Build Windows App
-        run: wails build -platform=windows/amd64
+        run: wails build -platform=windows/amd64 -mod=vendor
         env:
           CGO_ENABLED: 1
 
@@ -53,6 +54,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
+          cache: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -68,7 +70,7 @@ jobs:
           npm install
 
       - name: Build macOS App
-        run: wails build -platform=darwin/universal
+        run: wails build -platform=darwin/universal -mod=vendor
         env:
           CGO_ENABLED: 1
 
