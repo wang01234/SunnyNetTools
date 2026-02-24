@@ -1484,15 +1484,20 @@ func event(command string, args *JSON.SyJson) any {
 		defer _TmpLock.Unlock()
 		if savedPassword, ok := GlobalConfig.LoginUserInfo[username]; ok {
 			if savedPassword == password {
-				return map[string]bool{"success": true}
+				return map[string]interface{}{"success": true, "username": username}
 			}
 		}
 		return map[string]bool{"success": false}
 	case "获取账号列表":
 		_TmpLock.Lock()
 		defer _TmpLock.Unlock()
+		currentUser := args.GetData("currentUser")
 		var usernames []string
 		for username := range GlobalConfig.LoginUserInfo {
+			// 如果当前用户不是admin，则过滤掉admin账号
+			if currentUser != "admin" && username == "admin" {
+				continue
+			}
 			usernames = append(usernames, username)
 		}
 		return usernames
