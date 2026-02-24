@@ -33,9 +33,10 @@ jobs:
           npm install
 
       - name: Build Windows App
-        run: wails build -platform=windows/amd64 -mod=vendor
+        run: wails build -platform=windows/amd64
         env:
           CGO_ENABLED: 1
+          GOFLAGS: -mod=vendor
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
@@ -70,9 +71,10 @@ jobs:
           npm install
 
       - name: Build macOS App
-        run: wails build -platform=darwin/universal -mod=vendor
+        run: wails build -platform=darwin/universal
         env:
           CGO_ENABLED: 1
+          GOFLAGS: -mod=vendor
 
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
