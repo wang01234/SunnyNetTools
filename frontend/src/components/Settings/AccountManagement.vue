@@ -140,7 +140,7 @@ export default {
             password: addForm.value.password
           })
           
-          if (result.success) {
+          if (result.success === true) {
             ElMessage.success('添加成功')
             addDialogVisible.value = false
             loadAccounts()
@@ -176,7 +176,7 @@ export default {
             password: editForm.value.password
           })
           
-          if (result.success) {
+          if (result.success === true) {
             ElMessage.success('修改成功')
             editDialogVisible.value = false
           } else {
@@ -205,7 +205,7 @@ export default {
             username: row.username
           })
           
-          if (result.success) {
+          if (result.success === true) {
             ElMessage.success('删除成功')
             loadAccounts()
           } else {

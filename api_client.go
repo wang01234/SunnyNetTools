@@ -103,7 +103,16 @@ func Login(username, password string) (bool, string, error) {
 func GetUsers(currentUser string) ([]string, error) {
 	config := GetAPIConfig()
 
-	resp, err := http.Get(config.URL + "/api/users")
+	req, err := http.NewRequest("GET", config.URL+"/api/users", nil)
+	if err != nil {
+		return nil, err
+	}
+	if currentUser != "" {
+		req.Header.Set("X-Current-User", currentUser)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}

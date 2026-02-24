@@ -38,7 +38,7 @@ export default {
             password: this.loginForm.password
           })
           
-          if (result.success) {
+          if (result.success === true) {
             ElMessage({
               message: '登录成功',
               type: 'success'
