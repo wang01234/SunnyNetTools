@@ -74,11 +74,18 @@ jobs:
         env:
           CGO_ENABLED: 1
 
+      - name: Package macOS App as ZIP
+        run: |
+          cd build/bin
+          # Find the .app bundle and create a ZIP
+          APP_NAME=$(ls -d *.app | head -1)
+          zip -r "${APP_NAME%.app}-macOS-universal.zip" "$APP_NAME"
+
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-app
-          path: build/bin/*.app
+          name: macos-zip
+          path: build/bin/*.zip
           retention-days: 5
 
   release:
@@ -97,7 +104,7 @@ jobs:
       - name: Download macOS Artifact
         uses: actions/download-artifact@v4
         with:
-          name: macos-app
+          name: macos-zip
           path: release
 
       - name: List Release Files
