@@ -1,4 +1,4 @@
-name: Build and Release
+# name: Build and Release
 
 on:
   push:
@@ -157,30 +157,6 @@ jobs:
         with:
           name: api-server-windows
           path: release
-
-      - name: Checkout config.json
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            api-server/config.json
-          sparse-checkout-cone-mode: false
-
-      - name: Copy API Server Config
-        uses: actions/download-artifact@v4
-        with:
-          name: api-server-windows
-          path: release
-
-      - name: Download API Server Config
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            api-server/config.json
-          sparse-checkout-cone-mode: false
-
-      - name: Copy API Server Config
-        run: |
-          cp api-server/config.json release/
 
       - name: List Release Files
         run: ls -la release/
