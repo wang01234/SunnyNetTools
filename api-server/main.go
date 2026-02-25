@@ -311,19 +311,7 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
-	if r.Method != http.MethodDelete {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
 
-	path := strings.TrimPrefix(r.URL.Path, "/api/users/")
-	username := strings.Split(path, "/")[0]
-
-	if username == "admin" {
-		resp := ActionResponse{Success: false, Message: "默认账号不能删除"}
-		json.NewEncoder(w).Encode(resp)
-		return
-	}
 
 	var count int
 	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE username = ?", username).Scan(&count)

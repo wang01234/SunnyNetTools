@@ -18,25 +18,20 @@
         <template #default="scope">
           <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">修改密码</el-button>
           <el-button 
-            v-if="isAdmin"
+            v-if="isAdmin && !isCurrentUser(scope.row.username) && scope.row.username !== 'admin'"
             link 
             type="danger" 
             size="small" 
-            :disabled="scope.row.isDefault || isCurrentUser(scope.row.username)"
-            @click="deleteAccount(scope.row)"
-          >
-            v-if="isAdmin"
-            link 
-            type="danger" 
-            size="small" 
-            :disabled="scope.row.isDefault"
             @click="deleteAccount(scope.row)"
           >
             删除
           </el-button>
         </template>
       </el-table-column>
+
     </el-table>
+
+    <!-- 添加账号对话框 -->
 
     <!-- 添加账号对话框 -->
     <el-dialog v-model="addDialogVisible" title="添加账号" width="400px">
@@ -134,11 +129,7 @@ export default {
       const currentUser = window.localStorage.getItem('currentUser') || ''
       return username === currentUser
     }
-    
-    const isAdmin = computed(() => {
-      const role = window.localStorage.getItem('currentRole') || ''
-      return role === 'admin'
-    })
+
     
     const loadAccounts = async () => {
       try {
@@ -244,10 +235,6 @@ export default {
             username: row.username,
             currentUser
           })
-        try {
-          const result = await CallGoDo('删除账号', {
-            username: row.username
-          })
           
           if (result.success === true) {
             ElMessage.success('删除成功')
@@ -269,8 +256,11 @@ export default {
       accounts,
       isAdmin,
       isCurrentUser,
+
+      addDialogVisible,
       accounts,
       isAdmin,
+
       addDialogVisible,
       editDialogVisible,
       addLoading,
