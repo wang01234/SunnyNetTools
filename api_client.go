@@ -199,7 +199,17 @@ func UpdatePassword(username, password string) (bool, string, error) {
 	return result.Success, result.Message, nil
 }
 
-// DeleteUser calls the delete user API
+func DeleteUser(username, currentUser string) (bool, string, error) {
+	config := GetAPIConfig()
+
+	url := fmt.Sprintf("%s/api/users/%s", config.URL, username)
+	httpClient := &http.Client{}
+	reqHTTP, _ := http.NewRequest("DELETE", url, nil)
+	if currentUser != "" {
+		reqHTTP.Header.Set("X-Current-User", currentUser)
+	}
+
+	resp, err := httpClient.Do(reqHTTP)
 func DeleteUser(username string) (bool, string, error) {
 	config := GetAPIConfig()
 

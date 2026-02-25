@@ -221,6 +221,12 @@ export default {
         }
       ).then(async () => {
         try {
+          const currentUser = window.localStorage.getItem('currentUser') || ''
+          const result = await CallGoDo('删除账号', {
+            username: row.username,
+            currentUser
+          })
+        try {
           const result = await CallGoDo('删除账号', {
             username: row.username
           })
