@@ -220,5 +220,32 @@ func DeleteUser(username, currentUser string) (bool, string, error) {
 	json.NewDecoder(resp.Body).Decode(&result)
 
 	return result.Success, result.Message, nil
+}
+func DeleteUser(username, currentUser string) (bool, string, error) {
+	config := GetAPIConfig()
 
+	url := fmt.Sprintf("%s/api/users/%s", config.URL, username)
+	httpClient := &http.Client{}
+	reqHTTP, _ := http.NewRequest("DELETE", url, nil)
+	if currentUser != "" {
+		reqHTTP.Header.Set("X-Current-User", currentUser)
+	}
+
+	resp, err := httpClient.Do(reqHTTP)
+	config := GetAPIConfig()
+
+	url := fmt.Sprintf("%s/api/users/%s", config.URL, username)
+	httpClient := &http.Client{}
+	reqHTTP, _ := http.NewRequest("DELETE", url, nil)
+
+	resp, err := httpClient.Do(reqHTTP)
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result ActionResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	return result.Success, result.Message, nil
 }
