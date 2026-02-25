@@ -108,14 +108,6 @@ jobs:
       - name: Build Windows API Server
         run: |
           cd api-server
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o auth-api-linux -ldflags '-s -w'
-        run: |
-          cd api-server
-          GOOS=linux GOARCH=amd64 go build -o auth-api-linux
-
-      - name: Build Windows API Server
-        run: |
-          cd api-server
           GOOS=windows GOARCH=amd64 go build -o auth-api-windows.exe
 
       - name: Upload Linux API Server
