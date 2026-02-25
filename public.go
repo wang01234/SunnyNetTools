@@ -1553,7 +1553,7 @@ func event(command string, args *JSON.SyJson) any {
 			return map[string]string{"success": "false", "message": "默认账号不能删除"}
 		}
 		// 使用API服务器删除账号
-		success, msg, err := DeleteUser(username)
+		success, msg, err := DeleteUser(username, args.GetData("currentUser"))
 		if err != nil {
 			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
 		}
