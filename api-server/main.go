@@ -35,17 +35,29 @@ type LoginResponse struct {
 	Success  bool   `json:"success"`
 	Message  string `json:"message,omitempty"`
 	Username string `json:"username,omitempty"`
+	Role     string `json:"role,omitempty"`
+}
+
+type User struct {
+	Username string `json:"username"`
+	Role     string `json:"role"`
 }
 
 type UsersResponse struct {
-	Success bool     `json:"success"`
-	Users   []string `json:"users,omitempty"`
-	Message string   `json:"message,omitempty"`
+	Success bool   `json:"success"`
+	Users   []User `json:"users,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 type ActionResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message,omitempty"`
+}
+
+type CreateUserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 func loadConfig() error {
@@ -92,8 +104,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var storedPassword string
-	err := db.QueryRow("SELECT password FROM users WHERE username = ?", req.Username).Scan(&storedPassword)
+	var storedPassword, storedRole string
+	err := db.QueryRow("SELECT password, COALESCE(role, 'user') FROM users WHERE username = ?", req.Username).Scan(&storedPassword, &storedRole)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			resp := LoginResponse{Success: false, Message: "用户不存在"}
@@ -106,7 +118,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if checkPassword(req.Password, storedPassword) {
-		resp := LoginResponse{Success: true, Username: req.Username}
+		resp := LoginResponse{Success: true, Username: req.Username, Role: storedRole}
 		json.NewEncoder(w).Encode(resp)
 		return
 	}
@@ -123,7 +135,14 @@ func getUsersHandler(w http.ResponseWriter, r *http.Request) {
 
 	currentUser := r.Header.Get("X-Current-User")
 
-	rows, err := db.Query("SELECT username FROM users")
+	// Get current user's role
+	var myRole string
+	err := db.QueryRow("SELECT COALESCE(role, 'user') FROM users WHERE username = ?", currentUser).Scan(&myRole)
+	if err != nil {
+		myRole = "user" // Default to regular user if not found
+	}
+
+	rows, err := db.Query("SELECT username, COALESCE(role, 'user') as role FROM users")
 	if err != nil {
 		resp := UsersResponse{Success: false, Message: "查询失败"}
 		json.NewEncoder(w).Encode(resp)
@@ -131,16 +150,17 @@ func getUsersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var users []string
+	var users []User
 	for rows.Next() {
-		var username string
-		if err := rows.Scan(&username); err != nil {
+		var username, role string
+		if err := rows.Scan(&username, &role); err != nil {
 			continue
 		}
-		if currentUser != "admin" && username == "admin" {
+		// Admin sees all users, regular user sees only themselves
+		if myRole != "admin" && username != currentUser {
 			continue
 		}
-		users = append(users, username)
+		users = append(users, User{Username: username, Role: role})
 	}
 
 	resp := UsersResponse{Success: true, Users: users}
@@ -153,7 +173,23 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req LoginRequest
+	currentUser := r.Header.Get("X-Current-User")
+
+	// Check if current user is admin
+	var myRole string
+	err := db.QueryRow("SELECT COALESCE(role, 'user') FROM users WHERE username = ?", currentUser).Scan(&myRole)
+	if err != nil {
+		myRole = "user"
+	}
+
+	// Only admin can create users
+	if myRole != "admin" {
+		resp := ActionResponse{Success: false, Message: "无权限添加账号"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	var req CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		resp := ActionResponse{Success: false, Message: "请求格式错误"}
 		json.NewEncoder(w).Encode(resp)
@@ -166,8 +202,13 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Default role is user if not specified
+	if req.Role == "" {
+		req.Role = "user"
+	}
+
 	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM users WHERE username = ?", req.Username).Scan(&count)
+	err = db.QueryRow("SELECT COUNT(*) FROM users WHERE username = ?", req.Username).Scan(&count)
 	if err != nil {
 		resp := ActionResponse{Success: false, Message: "查询失败"}
 		json.NewEncoder(w).Encode(resp)
@@ -186,7 +227,7 @@ func createUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = db.Exec("INSERT INTO users (username, password) VALUES (?, ?)", req.Username, hashedPassword)
+	_, err = db.Exec("INSERT INTO users (username, password, role) VALUES (?, ?, ?)", req.Username, hashedPassword, req.Role)
 	if err != nil {
 		resp := ActionResponse{Success: false, Message: "添加账号失败"}
 		json.NewEncoder(w).Encode(resp)

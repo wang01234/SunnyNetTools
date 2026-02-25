@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CallGoDo } from './CallbackEventsOn.js'
+import { WindowMinimise, WindowMaximise, WindowUnmaximise, Quit } from '../wailsjs/runtime/runtime'
 
 export default {
   name: 'Login',
@@ -20,7 +21,8 @@ export default {
           { min: 1, message: '密码不能为空', trigger: 'blur' }
         ]
       },
-      loading: false
+      loading: false,
+      isMaximised: false
     }
   },
   methods: {
@@ -39,6 +41,15 @@ export default {
           })
           
           if (result.success === true) {
+            ElMessage({
+              message: '登录成功',
+              type: 'success'
+            })
+            // 存储当前用户名和角色
+            window.localStorage.setItem('currentUser', result.username || this.loginForm.username)
+            window.localStorage.setItem('currentRole', result.role || 'user')
+            // 触发登录成功事件
+            window.dispatchEvent(new CustomEvent('login-success'))
             ElMessage({
               message: '登录成功',
               type: 'success'
@@ -65,6 +76,21 @@ export default {
     },
     resetForm() {
       this.$refs.loginForm.resetFields()
+    },
+    handleMinimize() {
+      WindowMinimise()
+    },
+    handleMaximize() {
+      if (this.isMaximised) {
+        WindowUnmaximise()
+        this.isMaximised = false
+      } else {
+        WindowMaximise()
+        this.isMaximised = true
+      }
+    },
+    handleClose() {
+      Quit()
     }
   }
 }
@@ -72,6 +98,17 @@ export default {
 
 <template>
   <div class="login-container">
+    <div class="window-controls">
+      <button class="control-btn minimize" @click="handleMinimize" title="最小化">
+        <span>&#x2212;</span>
+      </button>
+      <button class="control-btn maximize" @click="handleMaximize" title="最大化">
+        <span>{{ isMaximised ? '&#x2750;' : '&#x25A1;' }}</span>
+      </button>
+      <button class="control-btn close" @click="handleClose" title="关闭">
+        <span>&#x2715;</span>
+      </button>
+    </div>
     <div class="login-box">
       <div class="login-header">
         <h2>大神工具 登录</h2>
@@ -136,6 +173,41 @@ export default {
   justify-content: center;
   align-items: center;
   overflow: hidden;
+  position: relative;
+}
+
+.window-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  -webkit-app-region: no-drag;
+}
+
+.control-btn {
+  width: 46px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.control-btn.close:hover {
+  background: #ff5f57;
+}
+
+.control-btn span {
+  line-height: 1;
 }
 
 .login-box {
