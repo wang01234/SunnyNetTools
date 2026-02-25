@@ -297,6 +297,28 @@ func deleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, "/api/users/")
 	username := strings.Split(path, "/")[0]
 
+	currentUser := r.Header.Get("X-Current-User")
+
+	// Prevent user from deleting themselves
+	if currentUser != "" && username == currentUser {
+		resp := ActionResponse{Success: false, Message: "不能删除自己的账号"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	if username == "admin" {
+		resp := ActionResponse{Success: false, Message: "默认账号不能删除"}
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	path := strings.TrimPrefix(r.URL.Path, "/api/users/")
+	username := strings.Split(path, "/")[0]
+
 	if username == "admin" {
 		resp := ActionResponse{Success: false, Message: "默认账号不能删除"}
 		json.NewEncoder(w).Encode(resp)

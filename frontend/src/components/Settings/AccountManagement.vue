@@ -22,6 +22,13 @@
             link 
             type="danger" 
             size="small" 
+            :disabled="scope.row.isDefault || isCurrentUser(scope.row.username)"
+            @click="deleteAccount(scope.row)"
+          >
+            v-if="isAdmin"
+            link 
+            type="danger" 
+            size="small" 
             :disabled="scope.row.isDefault"
             @click="deleteAccount(scope.row)"
           >
@@ -117,6 +124,17 @@ export default {
     }
 
     // Computed property to check if current user is admin
+    const isAdmin = computed(() => {
+      const role = window.localStorage.getItem('currentRole') || ''
+      return role === 'admin'
+    })
+    
+    // Check if the username is current user
+    const isCurrentUser = (username) => {
+      const currentUser = window.localStorage.getItem('currentUser') || ''
+      return username === currentUser
+    }
+    
     const isAdmin = computed(() => {
       const role = window.localStorage.getItem('currentRole') || ''
       return role === 'admin'
@@ -221,6 +239,12 @@ export default {
         }
       ).then(async () => {
         try {
+          const currentUser = window.localStorage.getItem('currentUser') || ''
+          const result = await CallGoDo('删除账号', {
+            username: row.username,
+            currentUser
+          })
+        try {
           const result = await CallGoDo('删除账号', {
             username: row.username
           })
@@ -242,6 +266,9 @@ export default {
     })
 
     return {
+      accounts,
+      isAdmin,
+      isCurrentUser,
       accounts,
       isAdmin,
       addDialogVisible,

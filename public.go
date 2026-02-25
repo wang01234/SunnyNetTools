@@ -1532,6 +1532,19 @@ func event(command string, args *JSON.SyJson) any {
 		return map[string]interface{}{"success": false, "message": msg}
 	case "删除账号":
 		username := args.GetData("username")
+		currentUser := args.GetData("currentUser")
+		if username == "" {
+			return map[string]interface{}{"success": false, "message": "用户名不能为空"}
+		}
+		// 使用API服务器删除账号
+		success, msg, err := DeleteUser(username, currentUser)
+		if err != nil {
+			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
+		}
+		if success {
+			return map[string]bool{"success": true}
+		}
+		username := args.GetData("username")
 		if username == "" {
 			return map[string]string{"success": "false", "message": "用户名不能为空"}
 		}
