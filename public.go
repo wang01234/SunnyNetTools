@@ -1488,17 +1488,6 @@ func event(command string, args *JSON.SyJson) any {
 			return map[string]interface{}{"success": true, "username": username, "role": role}
 		}
 		return map[string]interface{}{"success": false, "message": msg}
-		username := args.GetData("username")
-		password := args.GetData("password")
-		// 使用API服务器进行登录验证
-		success, msg, err := Login(username, password)
-		if err != nil {
-			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
-		}
-		if success {
-			return map[string]interface{}{"success": true, "username": username}
-		}
-		return map[string]interface{}{"success": false, "message": msg}
 	case "获取账号列表":
 		// 使用API服务器获取账号列表
 		currentUser := args.GetData("currentUser")
@@ -1510,57 +1499,37 @@ func event(command string, args *JSON.SyJson) any {
 	case "添加账号":
 		username := args.GetData("username")
 		password := args.GetData("password")
-		role := args.GetData("role")
-		if role == "" {
-			role = "user"
-		}
 		if username == "" || password == "" {
 			return map[string]interface{}{"success": false, "message": "用户名或密码不能为空"}
 		}
 		// 使用API服务器添加账号
+		role := args.GetData("role")
+		if role == "" {
+			role = "user"
+		}
 		success, msg, err := CreateUser(username, password, role, args.GetData("currentUser"))
 		if err != nil {
 			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
 		}
 		if success {
-			return map[string]interface{}{"success": true}
-	case "获取账号列表":
-		// 使用API服务器获取账号列表
-		users, err := GetUsers(args.GetData("currentUser"))
-		if err != nil {
-			return []string{}
-		}
-		return users
-	case "添加账号":
-		username := args.GetData("username")
-		password := args.GetData("password")
-		if username == "" || password == "" {
-			return map[string]string{"success": "false", "message": "用户名或密码不能为空"}
-		}
-		// 使用API服务器添加账号
-		success, msg, err := CreateUser(username, password)
-		if err != nil {
-			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
-		}
-		if success {
 			return map[string]bool{"success": true}
 		}
-		return map[string]string{"success": "false", "message": msg}
+		return map[string]interface{}{"success": false, "message": msg}
 	case "修改密码":
 		username := args.GetData("username")
 		password := args.GetData("password")
 		if username == "" || password == "" {
-			return map[string]string{"success": "false", "message": "用户名或密码不能为空"}
+			return map[string]interface{}{"success": false, "message": "用户名或密码不能为空"}
 		}
 		// 使用API服务器修改密码
 		success, msg, err := UpdatePassword(username, password)
 		if err != nil {
-			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
+			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
 		}
 		if success {
 			return map[string]bool{"success": true}
 		}
-		return map[string]string{"success": "false", "message": msg}
+		return map[string]interface{}{"success": false, "message": msg}
 	case "删除账号":
 		username := args.GetData("username")
 		if username == "" {
@@ -1573,12 +1542,12 @@ func event(command string, args *JSON.SyJson) any {
 		// 使用API服务器删除账号
 		success, msg, err := DeleteUser(username)
 		if err != nil {
-			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
+			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
 		}
 		if success {
 			return map[string]bool{"success": true}
 		}
-		return map[string]string{"success": "false", "message": msg}
+		return map[string]interface{}{"success": false, "message": msg}
 	case "":
 		return ""
 	default:
