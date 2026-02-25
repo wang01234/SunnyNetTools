@@ -2,7 +2,7 @@
 import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CallGoDo } from './CallbackEventsOn.js'
-import { WindowMinimise, WindowMaximise, WindowUnmaximise, Quit } from '../wailsjs/runtime/runtime'
+import { WindowMinimise, WindowMaximise, WindowUnmaximise, Quit } from '../../wailsjs/runtime/runtime'
 
 export default {
   name: 'Login',
