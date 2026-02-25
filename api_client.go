@@ -199,6 +199,7 @@ func UpdatePassword(username, password string) (bool, string, error) {
 	return result.Success, result.Message, nil
 }
 
+// DeleteUser calls the delete user API
 func DeleteUser(username, currentUser string) (bool, string, error) {
 	config := GetAPIConfig()
 
@@ -210,6 +211,16 @@ func DeleteUser(username, currentUser string) (bool, string, error) {
 	}
 
 	resp, err := httpClient.Do(reqHTTP)
+	if err != nil {
+		return false, "", err
+	}
+	defer resp.Body.Close()
+
+	var result ActionResponse
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	return result.Success, result.Message, nil
+}
 func DeleteUser(username string) (bool, string, error) {
 	config := GetAPIConfig()
 
