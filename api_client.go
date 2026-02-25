@@ -30,19 +30,33 @@ type LoginResponse struct {
 	Success  bool   `json:"success"`
 	Message  string `json:"message,omitempty"`
 	Username string `json:"username,omitempty"`
+	Role     string `json:"role,omitempty"`
+}
+
+// User represents a user with role
+type User struct {
+	Username string `json:"username"`
+	Role     string `json:"role"`
 }
 
 // UsersResponse represents a users list API response
 type UsersResponse struct {
-	Success bool     `json:"success"`
-	Users   []string `json:"users,omitempty"`
-	Message string   `json:"message,omitempty"`
+	Success bool   `json:"success"`
+	Users   []User `json:"users,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // ActionResponse represents a generic action API response
 type ActionResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message,omitempty"`
+}
+
+// CreateUserRequest represents a create user API request
+type CreateUserRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
 }
 
 // APICall performs an HTTP request to the API server
@@ -75,7 +89,7 @@ func APICall(method, endpoint string, body interface{}) ([]byte, error) {
 }
 
 // Login calls the login API
-func Login(username, password string) (bool, string, error) {
+func Login(username, password string) (bool, string, string, error) {
 	config := GetAPIConfig()
 
 	req := LoginRequest{
@@ -86,7 +100,7 @@ func Login(username, password string) (bool, string, error) {
 	jsonData, _ := json.Marshal(req)
 	resp, err := http.Post(config.URL+"/api/login", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
-		return false, "", err
+		return false, "", "", err
 	}
 	defer resp.Body.Close()
 
@@ -94,13 +108,13 @@ func Login(username, password string) (bool, string, error) {
 	json.NewDecoder(resp.Body).Decode(&result)
 
 	if result.Success {
-		return true, result.Username, nil
+		return true, result.Username, result.Role, nil
 	}
-	return false, result.Message, nil
+	return false, result.Message, "", nil
 }
 
 // GetUsers calls the get users API
-func GetUsers(currentUser string) ([]string, error) {
+func GetUsers(currentUser, currentRole string) ([]User, error) {
 	config := GetAPIConfig()
 
 	req, err := http.NewRequest("GET", config.URL+"/api/users", nil)
@@ -109,6 +123,9 @@ func GetUsers(currentUser string) ([]string, error) {
 	}
 	if currentUser != "" {
 		req.Header.Set("X-Current-User", currentUser)
+	}
+	if currentRole != "" {
+		req.Header.Set("X-Current-Role", currentRole)
 	}
 
 	client := &http.Client{}
@@ -125,16 +142,28 @@ func GetUsers(currentUser string) ([]string, error) {
 }
 
 // CreateUser calls the create user API
-func CreateUser(username, password string) (bool, string, error) {
+func CreateUser(username, password, role string, currentUser string) (bool, string, error) {
 	config := GetAPIConfig()
 
-	req := LoginRequest{
+	req := CreateUserRequest{
 		Username: username,
 		Password: password,
+		Role:     role,
 	}
 
 	jsonData, _ := json.Marshal(req)
-	resp, err := http.Post(config.URL+"/api/users", "application/json", bytes.NewBuffer(jsonData))
+
+	httpReq, err := http.NewRequest("POST", config.URL+"/api/users", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return false, "", err
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	if currentUser != "" {
+		httpReq.Header.Set("X-Current-User", currentUser)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
 	if err != nil {
 		return false, "", err
 	}

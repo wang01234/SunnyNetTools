@@ -1480,6 +1480,17 @@ func event(command string, args *JSON.SyJson) any {
 		username := args.GetData("username")
 		password := args.GetData("password")
 		// 使用API服务器进行登录验证
+		success, msg, role, err := Login(username, password)
+		if err != nil {
+			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
+		}
+		if success {
+			return map[string]interface{}{"success": true, "username": username, "role": role}
+		}
+		return map[string]interface{}{"success": false, "message": msg}
+		username := args.GetData("username")
+		password := args.GetData("password")
+		// 使用API服务器进行登录验证
 		success, msg, err := Login(username, password)
 		if err != nil {
 			return map[string]string{"success": "false", "message": "API请求失败: " + err.Error()}
@@ -1487,7 +1498,32 @@ func event(command string, args *JSON.SyJson) any {
 		if success {
 			return map[string]interface{}{"success": true, "username": username}
 		}
-		return map[string]string{"success": "false", "message": msg}
+		return map[string]interface{}{"success": false, "message": msg}
+	case "获取账号列表":
+		// 使用API服务器获取账号列表
+		currentUser := args.GetData("currentUser")
+		users, err := GetUsers(currentUser, args.GetData("currentRole"))
+		if err != nil {
+			return []User{}
+		}
+		return users
+	case "添加账号":
+		username := args.GetData("username")
+		password := args.GetData("password")
+		role := args.GetData("role")
+		if role == "" {
+			role = "user"
+		}
+		if username == "" || password == "" {
+			return map[string]interface{}{"success": false, "message": "用户名或密码不能为空"}
+		}
+		// 使用API服务器添加账号
+		success, msg, err := CreateUser(username, password, role, args.GetData("currentUser"))
+		if err != nil {
+			return map[string]interface{}{"success": false, "message": "API请求失败: " + err.Error()}
+		}
+		if success {
+			return map[string]interface{}{"success": true}
 	case "获取账号列表":
 		// 使用API服务器获取账号列表
 		users, err := GetUsers(args.GetData("currentUser"))

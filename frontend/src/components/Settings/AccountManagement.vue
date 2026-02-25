@@ -1,6 +1,6 @@
 <template>
   <div class="account-management">
-    <div class="toolbar">
+    <div class="toolbar" v-if="isAdmin">
       <el-button type="primary" @click="openAddDialog">添加账号</el-button>
     </div>
     
@@ -10,6 +10,7 @@
           <div style="display: flex; align-items: center;">
             <span>{{ scope.row.username }}</span>
             <el-tag v-if="scope.row.isDefault" size="small" type="info" style="margin-left: 8px">默认</el-tag>
+            <el-tag v-if="scope.row.role === 'admin'" size="small" type="warning" style="margin-left: 8px">管理员</el-tag>
           </div>
         </template>
       </el-table-column>
@@ -17,6 +18,7 @@
         <template #default="scope">
           <el-button link type="primary" size="small" @click="openEditDialog(scope.row)">修改密码</el-button>
           <el-button 
+            v-if="isAdmin"
             link 
             type="danger" 
             size="small" 
@@ -37,6 +39,12 @@
         </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="addForm.password" type="password" placeholder="请输入密码" show-password></el-input>
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="addForm.role" placeholder="请选择角色" style="width: 100%">
+            <el-option label="普通用户" value="user"></el-option>
+            <el-option label="管理员" value="admin"></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -64,7 +72,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CallGoDo } from '../CallbackEventsOn.js'
 
@@ -84,7 +92,8 @@ export default {
     
     const addForm = ref({
       username: '',
-      password: ''
+      password: '',
+      role: 'user'
     })
     
     const editForm = ref({
@@ -107,14 +116,22 @@ export default {
       ]
     }
 
+    // Computed property to check if current user is admin
+    const isAdmin = computed(() => {
+      const role = window.localStorage.getItem('currentRole') || ''
+      return role === 'admin'
+    })
+    
     const loadAccounts = async () => {
       try {
         const currentUser = window.localStorage.getItem('currentUser') || ''
-        const result = await CallGoDo('获取账号列表', { currentUser })
+        const currentRole = window.localStorage.getItem('currentRole') || ''
+        const result = await CallGoDo('获取账号列表', { currentUser, currentRole })
         if (result) {
-          accounts.value = result.map(username => ({
-            username,
-            isDefault: username === defaultUsername
+          accounts.value = result.map(user => ({
+            username: user.username,
+            role: user.role,
+            isDefault: user.username === defaultUsername
           }))
         }
       } catch (error) {
@@ -123,7 +140,7 @@ export default {
     }
 
     const openAddDialog = () => {
-      addForm.value = { username: '', password: '' }
+      addForm.value = { username: '', password: '', role: 'user' }
       addDialogVisible.value = true
     }
 
@@ -135,9 +152,12 @@ export default {
         
         addLoading.value = true
         try {
+          const currentUser = window.localStorage.getItem('currentUser') || ''
           const result = await CallGoDo('添加账号', {
             username: addForm.value.username,
-            password: addForm.value.password
+            password: addForm.value.password,
+            role: addForm.value.role,
+            currentUser
           })
           
           if (result.success === true) {
@@ -223,6 +243,7 @@ export default {
 
     return {
       accounts,
+      isAdmin,
       addDialogVisible,
       editDialogVisible,
       addLoading,
