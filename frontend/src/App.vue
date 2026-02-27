@@ -40,6 +40,23 @@ export default {
       this.isLoggedIn = true
     })
     
+    // 监听退出登录事件
+    window.addEventListener('logout', () => {
+      this.isLoggedIn = false
+    })
+    
+    // 检查是否已登录
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      this.isLoggedIn = true
+    }
+    
+    Interval
+    // 监听登录成功事件
+    window.addEventListener('login-success', () => {
+      this.isLoggedIn = true
+    })
+    
     Interval = setInterval(function () {
       let b = true
       for (const fieldName in window.VsCodeEdit) {

@@ -23,6 +23,21 @@
             </el-sub-menu>
           </el-sub-menu>
 
+          <el-menu-item index="退出登录" @click="handleLogout">
+            <div style="display: flex; align-items: center;">
+              <div style="cursor: pointer; display: flex; align-items: center;">
+                <el-tooltip class="item" effect="dark"
+                            content="退出登录"
+                            placement="top">
+                  <el-icon>
+                    <Switch/>
+                  </el-icon>
+                </el-tooltip>
+              </div>
+            </div>
+          </el-menu-item>
+
+
           <el-menu-item index="设置">
             <div style="display: flex; align-items: center;position: relative;top:0px">
               <div style="cursor: pointer; display: flex; align-items: center;">
@@ -222,7 +237,7 @@ import '../../wailsjs/runtime/runtime.js';
 import {EventsOn, WindowMinimise, WindowToggleMaximise} from "../../wailsjs/runtime/runtime.js";
 import {Do} from "../../wailsjs/go/main/App.js";
 import {CallGoDo, EventsDo, StrBase64Encode} from "./CallbackEventsOn.js";
-import {CircleCloseFilled, SuccessFilled} from '@element-plus/icons-vue'
+import {CircleCloseFilled, SuccessFilled, Switch} from '@element-plus/icons-vue'
 import {ElMessage} from "element-plus";
 import Doc from "./CertDoc/Doc.vue";
 import OpenSourceProtocol from "./OpenSourceProtocol/OpenSourceProtocol.vue";
@@ -358,6 +373,16 @@ export default {
       this.AutoRollShow = a
     },
     handleSelect(key, path) {
+      this.activeIndex = ""
+      if (key === "设置") {
+        this.clickSettings()
+        return
+      }
+      // 退出登录
+      if (key === "退出登录") {
+        this.handleLogout()
+        return
+      }
       this.activeIndex = ""
       if (key === "设置") {
         this.clickSettings()
@@ -578,7 +603,18 @@ export default {
 
       })
     },
+    handleLogout() {
+      // 清除登录信息
+      localStorage.removeItem('currentUser')
+      localStorage.removeItem('currentRole')
+      localStorage.removeItem('rememberedUsername')
+      localStorage.removeItem('rememberedPassword')
+      localStorage.removeItem('rememberMe')
+      // 触发退出登录事件
+      window.dispatchEvent(new CustomEvent('logout'))
+    },
     handleKeyDown(event) {
+
       event.stopPropagation();
     }
   },

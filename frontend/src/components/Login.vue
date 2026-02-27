@@ -1,5 +1,5 @@
 <script>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CallGoDo } from './CallbackEventsOn.js'
 import { WindowMinimise, WindowMaximise, WindowUnmaximise, Quit } from '../../wailsjs/runtime/runtime'
@@ -12,6 +12,7 @@ export default {
         username: '',
         password: ''
       }),
+      rememberMe: false,
       loginRules: {
         username: [
           { required: true, message: '请输入用户名', trigger: 'blur' }
@@ -25,7 +26,37 @@ export default {
       isMaximised: false
     }
   },
+  mounted() {
+    // 检查是否保存了登录信息
+    this.loadRememberedCredentials()
+  },
   methods: {
+    // 加载记住的凭证
+    loadRememberedCredentials() {
+      const savedUsername = localStorage.getItem('rememberedUsername')
+      const savedPassword = localStorage.getItem('rememberedPassword')
+      const savedRememberMe = localStorage.getItem('rememberMe')
+      
+      if (savedRememberMe === 'true' && savedUsername && savedPassword) {
+        this.loginForm.username = savedUsername
+        this.loginForm.password = savedPassword
+        this.rememberMe = true
+        // 自动登录
+        this.handleLogin()
+      }
+    },
+    // 保存记住的凭证
+    saveRememberedCredentials() {
+      if (this.rememberMe) {
+        localStorage.setItem('rememberedUsername', this.loginForm.username)
+        localStorage.setItem('rememberedPassword', this.loginForm.password)
+        localStorage.setItem('rememberMe', 'true')
+      } else {
+        localStorage.removeItem('rememberedUsername')
+        localStorage.removeItem('rememberedPassword')
+        localStorage.setItem('rememberMe', 'false')
+      }
+    },
     async handleLogin() {
       this.$refs.loginForm.validate(async (valid) => {
         if (!valid) {
@@ -41,6 +72,8 @@ export default {
           })
           
           if (result.success === true) {
+            // 保存记住的凭证
+            this.saveRememberedCredentials()
             ElMessage({
               message: '登录成功',
               type: 'success'
@@ -48,14 +81,6 @@ export default {
             // 存储当前用户名和角色
             window.localStorage.setItem('currentUser', result.username || this.loginForm.username)
             window.localStorage.setItem('currentRole', result.role || 'user')
-            // 触发登录成功事件
-            window.dispatchEvent(new CustomEvent('login-success'))
-            ElMessage({
-              message: '登录成功',
-              type: 'success'
-            })
-            // 存储当前用户名
-            window.localStorage.setItem('currentUser', result.username || this.loginForm.username)
             // 触发登录成功事件
             window.dispatchEvent(new CustomEvent('login-success'))
           } else {
@@ -147,6 +172,10 @@ export default {
             show-password
             @keyup.enter="handleLogin"
           />
+        </el-form-item>
+        
+        <el-form-item>
+          <el-checkbox v-model="rememberMe">记住我</el-checkbox>
         </el-form-item>
         
         <el-button
