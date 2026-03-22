@@ -626,6 +626,15 @@ export async function EventsDo(arg) {
             window.Theme.IsDark = (Args['DarkTheme'] + "") === "1"
             window.vm.Theme.Theme = (Args['DarkTheme'] + "") === "1"
         }
+            //自动加载进程驱动
+        {
+            if (Args['ProcessNames'] && Args['ProcessNames'].length > 0) {
+                // 配置文件中有进程名，自动加载驱动
+                if (window.vm.Settings) {
+                    window.vm.Settings.loadDrive()
+                }
+            }
+        }
             //其他
         {
             window.Theme.GOOS = Args.GOOS

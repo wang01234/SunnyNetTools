@@ -7,6 +7,15 @@ import (
 	"strings"
 )
 
+// 获取进程名列表
+func getProcessNames() []string {
+	configLock.Lock()
+	defer configLock.Unlock()
+	names := make([]string, len(GlobalConfig.ProcessNames))
+	copy(names, GlobalConfig.ProcessNames)
+	return names
+}
+
 // 保存进程名列表到配置文件
 func saveProcessNamesToConfig() {
 	configLock.Lock()
@@ -39,6 +48,8 @@ func loadProcessNamesFromConfig() {
 
 func processEvent(command string, args *JSON.SyJson) any {
 	switch command {
+	case "获取进程名列表":
+		return getProcessNames()
 	case "加载驱动":
 		result := app.App.StartProcess()
 		// 加载保存的进程名列表
