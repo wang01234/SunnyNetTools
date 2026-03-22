@@ -700,6 +700,8 @@ type ConfigRequestCertManager struct {
 	Host     string `json:"Host"`
 }
 type UserConfig struct {
+	// 进程拦截功能 - 进程名列表
+	ProcessNames []string `json:"ProcessNames"`
 	ColorConfig struct {
 		TCP      Color `json:"tcp"`
 		UDP      Color `json:"udp"`
@@ -783,6 +785,10 @@ func (c *UserConfig) loadDefaultValue() {
 	}
 	if c.LoginUserInfo == nil {
 		c.LoginUserInfo = make(map[string]string)
+	}
+	// 进程拦截功能 - 初始化进程名列表
+	if c.ProcessNames == nil {
+		c.ProcessNames = make([]string, 0)
 	}
 	// 添加默认登录账号
 	if len(c.LoginUserInfo) == 0 {
