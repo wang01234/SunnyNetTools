@@ -112,12 +112,26 @@ export default {
         if (window.UI.Settings && window.vm.Settings.Title.indexOf("进程拦截") !== -1 && !this.anyProcess && window.vm.Settings.LoadDrive) {
           this.isEnumerateProcesses = true
           this.EnumerateProcesses()
+          // 加载配置的进程名列表并显示
+          this.loadConfigProcessNames()
           this.isEnumerateProcesses = false
         }
       }
     }, 1000)
   },
   methods: {
+    // 加载配置中的进程名列表
+    loadConfigProcessNames() {
+      CallGoDo("获取进程名列表", null).then(res => {
+        if (res && Array.isArray(res)) {
+          for (const name of res) {
+            if (name && name.trim() !== '') {
+              this.$refs.ProcessName.AddLine(name.trim())
+            }
+          }
+        }
+      })
+    },
     addProcessName() {
       const pName = this.AddName.trim().toLowerCase()
       if (pName === '') {
