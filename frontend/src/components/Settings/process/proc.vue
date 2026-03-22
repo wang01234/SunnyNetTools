@@ -102,7 +102,9 @@ export default {
 
       //捕获任意进程
       anyProcess: false,
-      Adding: false
+      Adding: false,
+      //是否已经加载过配置的进程名
+      configProcessNamesLoaded: false
     }
 
   },
@@ -112,8 +114,11 @@ export default {
         if (window.UI.Settings && window.vm.Settings.Title.indexOf("进程拦截") !== -1 && !this.anyProcess && window.vm.Settings.LoadDrive) {
           this.isEnumerateProcesses = true
           this.EnumerateProcesses()
-          // 加载配置的进程名列表并显示
-          this.loadConfigProcessNames()
+          // 加载配置的进程名列表并显示（只加载一次）
+          if (!this.configProcessNamesLoaded) {
+            this.configProcessNamesLoaded = true
+            this.loadConfigProcessNames()
+          }
           this.isEnumerateProcesses = false
         }
       }
