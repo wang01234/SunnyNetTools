@@ -38,10 +38,10 @@ func loadProcessNamesFromConfig() {
 	copy(names, GlobalConfig.ProcessNames)
 	configLock.Unlock()
 
-	// 将保存的进程名添加到 SunnyNet
+	// 将保存的进程名添加到 SunnyNet（配置中存的是UTF-8，需要转GBK给SunnyNet）
 	for _, name := range names {
 		if strings.TrimSpace(name) != "" {
-			app.App.ProcessAddName(name)
+			app.App.ProcessAddName(JsCall.ToGBK(name))
 		}
 	}
 }
@@ -69,34 +69,34 @@ func processEvent(command string, args *JSON.SyJson) any {
 		return true
 	case "进程驱动添加进程名":
 		gx := args.GetData("isSet") == "true"
-		Name := JsCall.ToGBK(args.GetData("Name"))
-		if Name == "{OpenALL}" {
+		utf8Name := args.GetData("Name")
+		if utf8Name == "{OpenALL}" {
 			app.App.ProcessALLName(gx)
 			return true
 		}
+		gbkName := JsCall.ToGBK(utf8Name)
 		if gx {
-			app.App.ProcessAddName(Name)
-			// 添加到配置列表
+			app.App.ProcessAddName(gbkName)
+			// 添加到配置列表（保存UTF-8原始名称，避免JSON序列化时GBK字节被损坏导致乱码）
 			configLock.Lock()
-			// 检查是否已存在
 			exists := false
 			for _, n := range GlobalConfig.ProcessNames {
-				if n == Name {
+				if n == utf8Name {
 					exists = true
 					break
 				}
 			}
 			if !exists {
-				GlobalConfig.ProcessNames = append(GlobalConfig.ProcessNames, Name)
+				GlobalConfig.ProcessNames = append(GlobalConfig.ProcessNames, utf8Name)
 			}
 			configLock.Unlock()
 			saveProcessNamesToConfig()
 		} else {
-			app.App.ProcessDelName(Name)
-			// 从配置列表中移除
+			app.App.ProcessDelName(gbkName)
+			// 从配置列表中移除（配置中存的是UTF-8）
 			configLock.Lock()
 			for i, n := range GlobalConfig.ProcessNames {
-				if n == Name {
+				if n == utf8Name {
 					GlobalConfig.ProcessNames = append(GlobalConfig.ProcessNames[:i], GlobalConfig.ProcessNames[i+1:]...)
 					break
 				}

@@ -626,12 +626,12 @@ export async function EventsDo(arg) {
             window.Theme.IsDark = (Args['DarkTheme'] + "") === "1"
             window.vm.Theme.Theme = (Args['DarkTheme'] + "") === "1"
         }
-            //自动加载进程驱动
+            //自动加载进程驱动(后端init中已自动启动驱动并加载进程名,前端只需更新界面状态)
         {
             if (Args['ProcessNames'] && Args['ProcessNames'].length > 0) {
-                // 配置文件中有进程名，自动加载驱动
                 if (window.vm.Settings) {
-                    window.vm.Settings.loadDrive()
+                    window.vm.Settings.LoadDrive = true
+                    window.vm.Settings.DriveLoading = false
                 }
             }
         }

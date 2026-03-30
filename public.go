@@ -347,8 +347,8 @@ func event(command string, args *JSON.SyJson) any {
 		return true
 	//UI加载完成
 	case "init":
-		CallJs("加载配置", GlobalConfig)
 		if app.App != nil {
+			CallJs("加载配置", GlobalConfig)
 			errStr := ""
 			if app.App.Error != nil {
 				errStr = app.App.Error.Error()
@@ -491,7 +491,13 @@ func event(command string, args *JSON.SyJson) any {
 				GlobalConfig.RequestCertManager[Api.CreateCertificate()] = _Rules[i]
 			}
 		}
-		//11111111111111111
+		//如果配置中有保存的进程名，自动启动进程驱动并加载进程名
+		if len(GlobalConfig.ProcessNames) > 0 {
+			if app.App.StartProcess() {
+				loadProcessNamesFromConfig()
+			}
+		}
+		CallJs("加载配置", GlobalConfig)
 		CallJs("启动状态", base64.StdEncoding.EncodeToString([]byte(errStr)))
 		return nil
 	//UI获取运行端口
